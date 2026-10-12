@@ -2,6 +2,7 @@
 import numpy as np
 import pickle
 base = "/ceph/behrens/kris/research/meg_mini2p/"
+from scipy.ndimage import gaussian_filter1d
 
 #%% load some data
 
@@ -88,4 +89,24 @@ def warp_activity(traces, init_times, choice_times, num_bins = 20, num_edge_fram
     
     return aligned
     
+    
+    
+#%% construct a data frame from just before to just after choice
+
+def aligned_activity(traces, init_times, choice_times, align_to = "choice", bins_before = 15, bins_after = 15, smooth = 3):
+
+    assert len(init_times) == len(choice_times)
+    assert np.all(choice_times > init_times)
+    
+    event_times = choice_times if align_to == "choice" else init_times
+
+    aligned = np.zeros((bins_before + bins_after, traces.shape[1], len(event_times)))
+
+    smooth_traces = traces if smooth == 0 else gaussian_filter1d(traces, smooth, axis=0)
+
+    for i, t in enumerate(event_times):
+        #print(i, t)
+        aligned[..., i] = smooth_traces[t-bins_before:t+bins_after, :]
+        
+    return aligned
     

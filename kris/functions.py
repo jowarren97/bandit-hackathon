@@ -74,7 +74,7 @@ def warp_activity(traces, init_times, choice_times, num_bins = 20, num_edge_fram
 
     for i in range(len(choice_times)):
         t0, t1 = init_times[i], choice_times[i]
-        print(i, t0, t1)
+        #print(i, t0, t1)
         
         aligned[:num_edge_frames, :, i] = traces[t0-num_edge_frames:t0, :]
         aligned[num_edge_frames+num_bins:, :, i] = traces[t1:t1+num_edge_frames, :]

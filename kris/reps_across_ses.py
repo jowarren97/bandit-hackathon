@@ -67,7 +67,7 @@ for group in ind_groups:
 
 # %%
 
-align_by = 1
+align_by = 0
 
 order = np.argsort(np.argmax(mean_data[align_by], axis = 0))
 for igroup, group in enumerate(ind_groups):

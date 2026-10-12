@@ -13,21 +13,29 @@ def get_data(ses, run):
     traces = data[rel_cols].to_numpy()
     traces = (traces - np.mean(traces, axis=0, keepdims = True)) / (np.std(traces, axis=0, keepdims = True) + 1e-6)
 
+    if "event:init_cue_timer" not in data.columns:
+        return [[] for _ in range(4)]
 
     inits = data["event:init_cue_timer"].to_numpy()
-    pulses = data["event:pulse_on_timer"].to_numpy()
+    init_times = np.where(inits == 1)[0]
     
+    pulses = data["event:pulse_on_timer"].to_numpy()
+    pulse_times = np.where(pulses == 1)[0]
+    # count multiple pulses as one choice
+    pulse_times = np.array([pulse_times[0]] + [pulse_times[i] for i in range(len(pulse_times)) if pulse_times[i] - pulse_times[i-1] > 10])
+
+    # find 'no pulse' choices
     if "event:no_rew_cue_timer" in data.columns:
         no_rew_cues = data["event:no_rew_cue_timer"].to_numpy()
     else: 
         no_rew_cues = np.zeros_like(inits)
-
-    init_times = np.where(inits == 1)[0]
-    pulse_times = np.where(pulses == 1)[0]
-    pulse_times = np.array([pulse_times[0]] + [pulse_times[i] for i in range(len(pulse_times)) if pulse_times[i] - pulse_times[i-1] > 10])
-
     no_rew_times = np.where(no_rew_cues == 1)[0]
+    
+    # combine into choice times
     choice_times = np.sort(np.concatenate([no_rew_times, pulse_times]))
+    
+    assert len(init_times) == len(choice_times)
+    assert np.all(choice_times > init_times)
 
     return data, traces, init_times, choice_times
 
@@ -61,9 +69,6 @@ def get_roi_ids():
 #%% construct a data frame from 20 frames before initiation to 20 frames after the choice
 
 def warp_activity(traces, init_times, choice_times, num_bins = 20, num_edge_frames = 4):
-
-    assert len(init_times) == len(choice_times)
-    assert np.all(choice_times > init_times)
 
     aligned = np.zeros((num_bins+2*num_edge_frames, traces.shape[1], len(choice_times)))
 

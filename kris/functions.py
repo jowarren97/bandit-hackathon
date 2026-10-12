@@ -15,7 +15,11 @@ def get_data(ses, run):
 
     inits = data["event:init_cue_timer"].to_numpy()
     pulses = data["event:pulse_on_timer"].to_numpy()
-    no_rew_cues = data["event:no_rew_cue_timer"].to_numpy()
+    
+    if "event:no_rew_cue_timer" in data.columns:
+        no_rew_cues = data["event:no_rew_cue_timer"].to_numpy()
+    else: 
+        no_rew_cues = np.zeros_like(inits)
 
     init_times = np.where(inits == 1)[0]
     pulse_times = np.where(pulses == 1)[0]
@@ -26,8 +30,10 @@ def get_data(ses, run):
 
     return data, traces, init_times, choice_times
 
-def get_roid_ids():
+def get_roi_ids():
     
+    rois = np.loadtxt(f"{base}/data/roi_matches.csv", dtype=str, delimiter=",", skiprows = 1)
+
     rois_by_session = {}
 
     ses2uid = {}

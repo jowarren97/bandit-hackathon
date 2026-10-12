@@ -43,8 +43,6 @@ plt.close()
 
 # %%
 
-rois = np.loadtxt(f"{base}/data/roi_matches.csv", dtype=str, delimiter=",", skiprows = 1)
-
 
 # %%
 
